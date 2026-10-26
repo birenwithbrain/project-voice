@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     database_url: str | None = None
     storage_root: Path = PROJECT_ROOT / "storage"
     max_upload_bytes: int = 50 * 1024 * 1024
+    ffmpeg_path: str = "ffmpeg"
+    ffprobe_path: str = "ffprobe"
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

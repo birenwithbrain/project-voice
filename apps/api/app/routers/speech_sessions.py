@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.db.models import MediaAsset, MediaKind, PersonalProfile, SessionStatus, SpeechSession
 from app.db.session import get_database_session
 from app.schemas.speech_sessions import CreateSpeechSessionRequest, SpeechSessionResponse
+from app.services.audio_pipeline import AudioPipelineError, normalize_for_speech
 from app.services.media_storage import delete_stored_media, store_original_audio
 
 router = APIRouter(prefix="/speech-sessions", tags=["speech sessions"])
@@ -103,4 +104,59 @@ def get_speech_session(
     session_id: uuid.UUID,
     database: Session = Depends(get_database_session),
 ) -> SpeechSession:
+    return get_session_or_404(database, session_id)
+
+
+@router.post("/{session_id}/preprocess", response_model=SpeechSessionResponse)
+def preprocess_audio(
+    session_id: uuid.UUID,
+    database: Session = Depends(get_database_session),
+) -> SpeechSession:
+    """Normalize stored audio to a consistent, speech-analysis-ready WAV file."""
+
+    speech_session = get_session_or_404(database, session_id)
+    original = next(
+        (asset for asset in speech_session.media_assets if asset.kind is MediaKind.ORIGINAL_AUDIO),
+        None,
+    )
+    already_normalized = any(
+        asset.kind is MediaKind.NORMALIZED_AUDIO for asset in speech_session.media_assets
+    )
+    if original is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Upload audio before preprocessing.",
+        )
+    if already_normalized:
+        return speech_session
+
+    settings = get_settings()
+    target_key = f"sessions/{session_id}/normalized.wav"
+    try:
+        normalized = normalize_for_speech(
+            source=settings.storage_root / original.storage_key,
+            destination=settings.storage_root / target_key,
+            ffmpeg_path=settings.ffmpeg_path,
+            ffprobe_path=settings.ffprobe_path,
+        )
+    except AudioPipelineError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Audio preprocessing is unavailable. Install FFmpeg or use the container stack.",
+        ) from error
+
+    database.add(
+        MediaAsset(
+            session=speech_session,
+            kind=MediaKind.NORMALIZED_AUDIO,
+            storage_key=target_key,
+            content_type="audio/wav",
+            byte_size=normalized.byte_size,
+            duration_ms=normalized.duration_ms,
+            sample_rate_hz=normalized.sample_rate_hz,
+            channel_count=normalized.channel_count,
+            sha256=normalized.sha256,
+        )
+    )
+    database.commit()
     return get_session_or_404(database, session_id)

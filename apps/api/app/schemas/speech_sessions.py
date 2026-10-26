@@ -16,6 +16,7 @@ class MediaAssetResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    kind: str
     content_type: str
     byte_size: int
     duration_ms: int | None
