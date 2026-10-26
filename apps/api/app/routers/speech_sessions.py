@@ -5,11 +5,20 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.config import get_settings
-from app.db.models import MediaAsset, MediaKind, PersonalProfile, SessionStatus, SpeechSession
+from app.db.models import (
+    MediaAsset,
+    MediaKind,
+    PersonalProfile,
+    SessionStatus,
+    SpeechSession,
+    Transcript,
+    TranscriptWord,
+)
 from app.db.session import get_database_session
 from app.schemas.speech_sessions import CreateSpeechSessionRequest, SpeechSessionResponse
 from app.services.audio_pipeline import AudioPipelineError, normalize_for_speech
 from app.services.media_storage import delete_stored_media, store_original_audio
+from app.services.transcription import transcribe_audio
 
 router = APIRouter(prefix="/speech-sessions", tags=["speech sessions"])
 
@@ -158,5 +167,64 @@ def preprocess_audio(
             sha256=normalized.sha256,
         )
     )
+    database.commit()
+    return get_session_or_404(database, session_id)
+
+
+@router.post("/{session_id}/transcribe", response_model=SpeechSessionResponse)
+def transcribe_speech_session(
+    session_id: uuid.UUID,
+    database: Session = Depends(get_database_session),
+) -> SpeechSession:
+    """Transcribe prepared audio locally with word timestamps."""
+    speech_session = get_session_or_404(database, session_id)
+    if speech_session.transcript is not None:
+        return speech_session
+    normalized = next(
+        (
+            asset
+            for asset in speech_session.media_assets
+            if asset.kind is MediaKind.NORMALIZED_AUDIO
+        ),
+        None,
+    )
+    if normalized is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Preprocess audio before transcription.",
+        )
+
+    settings = get_settings()
+    try:
+        result = transcribe_audio(
+            audio_path=settings.storage_root / normalized.storage_key,
+            model_name=settings.whisper_model,
+            device=settings.whisper_device,
+            compute_type=settings.whisper_compute_type,
+        )
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Local transcription is unavailable.",
+        ) from error
+
+    transcript = Transcript(
+        session=speech_session,
+        provider="faster-whisper",
+        model=settings.whisper_model,
+        language_code=result.language_code,
+        text=result.text,
+    )
+    transcript.words = [
+        TranscriptWord(
+            position=index,
+            text=word.text,
+            start_ms=word.start_ms,
+            end_ms=word.end_ms,
+            confidence=word.probability,
+        )
+        for index, word in enumerate(result.words)
+    ]
+    database.add(transcript)
     database.commit()
     return get_session_or_404(database, session_id)

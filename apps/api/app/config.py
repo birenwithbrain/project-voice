@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 50 * 1024 * 1024
     ffmpeg_path: str = "ffmpeg"
     ffprobe_path: str = "ffprobe"
+    whisper_model: str = "base"
+    whisper_device: str = "cpu"
+    whisper_compute_type: str = "int8"
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",
