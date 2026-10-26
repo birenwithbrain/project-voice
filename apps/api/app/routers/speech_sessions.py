@@ -1,4 +1,5 @@
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy import select
@@ -6,8 +7,11 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.config import get_settings
 from app.db.models import (
+    AnalysisRun,
+    AnalysisRunStatus,
     MediaAsset,
     MediaKind,
+    MetricValue,
     PersonalProfile,
     SessionStatus,
     SpeechSession,
@@ -18,7 +22,8 @@ from app.db.session import get_database_session
 from app.schemas.speech_sessions import CreateSpeechSessionRequest, SpeechSessionResponse
 from app.services.audio_pipeline import AudioPipelineError, normalize_for_speech
 from app.services.media_storage import delete_stored_media, store_original_audio
-from app.services.transcription import transcribe_audio
+from app.services.speech_metrics import calculate_metrics
+from app.services.transcription import TranscribedWord, transcribe_audio
 
 router = APIRouter(prefix="/speech-sessions", tags=["speech sessions"])
 
@@ -226,5 +231,51 @@ def transcribe_speech_session(
         for index, word in enumerate(result.words)
     ]
     database.add(transcript)
+    database.commit()
+    return get_session_or_404(database, session_id)
+
+
+@router.post("/{session_id}/analyze", response_model=SpeechSessionResponse)
+def analyze_speech_session(
+    session_id: uuid.UUID,
+    database: Session = Depends(get_database_session),
+) -> SpeechSession:
+    """Calculate explainable, deterministic communication metrics."""
+    speech_session = get_session_or_404(database, session_id)
+    transcript = speech_session.transcript
+    if transcript is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Transcribe audio before analysis.",
+        )
+    if any(run.status is AnalysisRunStatus.COMPLETE for run in speech_session.analysis_runs):
+        return speech_session
+
+    words = [
+        TranscribedWord(
+            text=word.text,
+            start_ms=word.start_ms,
+            end_ms=word.end_ms,
+            probability=float(word.confidence) if word.confidence is not None else None,
+        )
+        for word in transcript.words
+    ]
+    analysis_run = AnalysisRun(
+        session=speech_session,
+        pipeline_version="metrics-v1",
+        status=AnalysisRunStatus.COMPLETE,
+        started_at=datetime.now(UTC),
+        completed_at=datetime.now(UTC),
+    )
+    analysis_run.metrics = [
+        MetricValue(
+            metric_code=metric.code,
+            value=metric.value,
+            unit=metric.unit,
+            measured_at=datetime.now(UTC),
+        )
+        for metric in calculate_metrics(text=transcript.text, words=words)
+    ]
+    database.add(analysis_run)
     database.commit()
     return get_session_or_404(database, session_id)
