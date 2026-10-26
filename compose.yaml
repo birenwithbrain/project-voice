@@ -1,12 +1,43 @@
 name: project-voice
 
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-voice_coach}
+      POSTGRES_USER: ${POSTGRES_USER:-voice_coach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5432:5432"
+    volumes:
+      - project_voice_postgres:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: ./apps/api
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      VOICE_COACH_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-voice_coach}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-voice_coach}
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["setup"]
+
   api:
     build:
       context: ./apps/api
     environment:
       VOICE_COACH_ENVIRONMENT: development
       VOICE_COACH_API_CORS_ORIGINS: http://localhost:3000
+      VOICE_COACH_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-voice_coach}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-voice_coach}
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
 
@@ -20,3 +51,6 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+
+volumes:
+  project_voice_postgres:

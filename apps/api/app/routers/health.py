@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+
+from app.db.session import database_is_ready
 
 router = APIRouter(tags=["health"])
 
@@ -20,6 +22,12 @@ def liveness() -> HealthResponse:
 
 @router.get("/health/ready", response_model=HealthResponse)
 def readiness() -> HealthResponse:
-    """Confirm readiness for the Phase 1 stateless API workload."""
+    """Confirm that the API and its required database are ready."""
+
+    if not database_is_ready():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="database is unavailable",
+        )
 
     return HealthResponse(status="ready", timestamp=datetime.now(UTC))
