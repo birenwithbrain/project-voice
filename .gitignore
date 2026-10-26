@@ -1,0 +1,31 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# JavaScript
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+*.egg-info/
+
+# Tooling and OS files
+.DS_Store
+Thumbs.db
+
+# Runtime data (audio, exports, and database volumes stay out of Git)
+data/
+storage/
+
+# ChatGPT Project reference material is synced separately and is not application code.
+sources/
+AGENTS.md
