@@ -56,6 +56,10 @@ cd apps/api
 alembic upgrade head
 ```
 
+## Recording a practice session (Phase 3)
+
+Start the database and API using the commands above, then start the web app with `npm run dev` from `apps/web`. At `http://localhost:3000`, select **Record** and permit microphone access—or choose **Or upload audio**. A saved recording is held in the local `storage/` folder, which is excluded from Git. This phase captures and stores audio only; transcription and coaching arrive later.
+
 ## Quality checks
 
 ```powershell

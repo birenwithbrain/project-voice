@@ -28,9 +28,17 @@ main {
 h1 { font-size: clamp(3.5rem, 10vw, 7rem); letter-spacing: -.07em; line-height: .9; margin: 0; }
 h2 { font-size: 1.6rem; letter-spacing: -.03em; margin: 0 0 .75rem; }
 .summary { color: var(--muted); font-size: clamp(1.12rem, 2vw, 1.4rem); line-height: 1.6; margin: 2rem 0; }
-.status, .nextStep { border: 1px solid var(--border); border-radius: 1rem; background: var(--surface); backdrop-filter: blur(1rem); }
+.status, .recorder { border: 1px solid var(--border); border-radius: 1rem; background: var(--surface); backdrop-filter: blur(1rem); }
 .status { display: inline-flex; align-items: center; gap: .6rem; padding: .75rem 1rem; color: var(--muted); }
 .statusDot { width: .6rem; height: .6rem; background: var(--accent); border-radius: 50%; box-shadow: 0 0 1rem var(--accent); }
-.nextStep { margin-top: 5rem; max-width: 38rem; padding: 1.75rem; }
-.nextStep p:not(.eyebrow) { color: var(--muted); line-height: 1.6; }
-a { color: var(--accent); font-weight: 700; }
+.recorder { margin-top: 5rem; max-width: 42rem; padding: 1.75rem; }
+.recorderMessage { color: var(--muted); line-height: 1.6; }
+.recorderControls { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+button, .uploadLabel { border: 0; border-radius: .7rem; cursor: pointer; font: inherit; font-weight: 700; padding: .8rem 1rem; }
+button { background: var(--accent); color: #10251f; }
+button:disabled { cursor: wait; opacity: .7; }
+.recordingButton { background: #ff968f; color: #35120f; }
+.uploadLabel { border: 1px solid var(--border); color: var(--ink); }
+.uploadLabel input { display: none; }
+.audioPreview { display: block; margin-top: 1.5rem; width: 100%; }
+.saveButton { display: block; margin-top: 1rem; }

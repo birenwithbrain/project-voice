@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     api_cors_origins: str = "http://localhost:3000"
     database_url: str | None = None
+    storage_root: Path = PROJECT_ROOT / "storage"
+    max_upload_bytes: int = 50 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+import { AudioRecorder } from "./components/audio-recorder";
 
 export default function Home() {
   return (
@@ -11,20 +11,10 @@ export default function Home() {
         </p>
         <div className="status" role="status">
           <span className="statusDot" aria-hidden="true" />
-          Foundation ready. Audio sessions begin in Phase 3.
+          Your recordings stay under your control.
         </div>
       </section>
-      <section className="nextStep" aria-labelledby="next-step-title">
-        <p className="eyebrow">Next up</p>
-        <h2 id="next-step-title">Private data foundation</h2>
-        <p>
-          Phase 2 will add the data model for sessions, transcripts, metrics, exercises,
-          and your coaching profile.
-        </p>
-        <a href={`${API_BASE_URL}/health/live`} target="_blank" rel="noreferrer">
-          Check API health
-        </a>
-      </section>
+      <AudioRecorder />
     </main>
   );
 }
