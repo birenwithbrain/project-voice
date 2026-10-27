@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 12
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - project_voice_postgres:/var/lib/postgresql/data
 
@@ -41,7 +41,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   web:
     build:
@@ -52,7 +52,7 @@ services:
       api:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
 
 volumes:
   project_voice_postgres:
