@@ -20,6 +20,7 @@ export function AudioRecorder() {
   const [audio, setAudio] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [durationMs, setDurationMs] = useState<number | null>(null);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
   const [state, setState] = useState<RecorderState>("idle");
   const [message, setMessage] = useState("Choose Record to begin a private practice session.");
 
@@ -100,8 +101,9 @@ export function AudioRecorder() {
         body: formData,
       });
       if (!uploadResponse.ok) throw new Error("Could not save the recording.");
+      setSavedSessionId(speechSession.id);
       setState("complete");
-      setMessage("Saved. Speech transcription and coaching arrive in the next phases.");
+      setMessage("Saved privately. Run local analysis and review coaching in your session report.");
     } catch {
       setState("error");
       setMessage("The recording was not saved. Keep this page open and try again once the API and database are running.");
@@ -135,6 +137,11 @@ export function AudioRecorder() {
         <button type="button" className="saveButton" onClick={saveRecording}>
           Save practice session
         </button>
+      )}
+      {state === "complete" && savedSessionId && (
+        <a className="reportLink" href={`/sessions/${savedSessionId}`}>
+          Open session report <span aria-hidden="true">→</span>
+        </a>
       )}
     </section>
   );

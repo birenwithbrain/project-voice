@@ -42,3 +42,37 @@ button:disabled { cursor: wait; opacity: .7; }
 .uploadLabel input { display: none; }
 .audioPreview { display: block; margin-top: 1.5rem; width: 100%; }
 .saveButton { display: block; margin-top: 1rem; }
+
+.reportLink { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1rem; color: var(--accent); font-weight: 700; text-decoration: none; }
+.reportLink:hover { text-decoration: underline; }
+.reportPage { width: min(100% - 2rem, 68rem); margin: 0 auto; padding: 3rem 0 5rem; }
+.reportHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.reportTitle { font-size: clamp(2.4rem, 7vw, 4.6rem); line-height: 1; margin: 0 0 1rem; }
+.backLink { color: var(--muted); text-decoration: none; }
+.backLink:hover { color: var(--accent); }
+.reportPanel { border: 1px solid var(--border); border-radius: 1rem; background: var(--surface); padding: clamp(1.2rem, 3vw, 1.75rem); margin-top: 1rem; }
+.reportPanel h2 { margin-bottom: 1.1rem; }
+.reportPanel p { color: var(--muted); line-height: 1.65; }
+.reportActions { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+.reportGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .75rem; }
+.metricCard { border: 1px solid var(--border); border-radius: .8rem; padding: 1rem; min-width: 0; }
+.metricName { display: block; color: var(--muted); font-size: .8rem; line-height: 1.4; overflow-wrap: anywhere; text-transform: capitalize; }
+.metricValue { display: block; font-size: 1.45rem; font-weight: 700; margin: .55rem 0 .2rem; overflow-wrap: anywhere; }
+.metricUnit { display: block; color: var(--muted); font-size: .75rem; }
+.transcriptText { white-space: pre-wrap; color: var(--ink) !important; line-height: 1.8 !important; overflow-wrap: anywhere; }
+.coachingList { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
+.coachingItem { border: 1px solid var(--border); border-radius: .8rem; padding: 1rem; }
+.coachingItem h3 { margin: 0 0 .55rem; font-size: 1.05rem; }
+.coachingItem p { margin: .45rem 0; }
+.evidence { border-left: 2px solid var(--accent); padding-left: .75rem; font-size: .92rem; }
+.priority { display: inline-block; color: var(--muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+.consentRow { display: flex; align-items: flex-start; gap: .7rem; color: var(--muted); font-size: .9rem; line-height: 1.5; margin-top: 1.3rem; }
+.consentRow input { margin-top: .25rem; accent-color: var(--accent); flex: 0 0 auto; }
+.reportError { border: 1px solid rgba(255, 150, 143, .45); border-radius: .8rem; padding: 1rem; color: #ffb0aa; line-height: 1.5; }
+.reportMeta { color: var(--muted); font-size: .88rem; }
+.reportButtonSecondary { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+@media (max-width: 640px) {
+  .reportPage { padding-top: 2rem; }
+  .reportHeader { margin-bottom: 1.2rem; }
+  .reportPanel { border-radius: .8rem; }
+}

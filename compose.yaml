@@ -35,6 +35,8 @@ services:
       VOICE_COACH_ENVIRONMENT: development
       VOICE_COACH_API_CORS_ORIGINS: http://localhost:3000
       VOICE_COACH_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-voice_coach}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-voice_coach}
+      VOICE_COACH_GEMINI_API_KEY: ${VOICE_COACH_GEMINI_API_KEY:-}
+      VOICE_COACH_GEMINI_MODEL: ${VOICE_COACH_GEMINI_MODEL:-}
     depends_on:
       db:
         condition: service_healthy

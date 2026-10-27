@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.logging import configure_logging
+from app.routers.coaching import router as coaching_router
 from app.routers.health import router as health_router
 from app.routers.speech_sessions import router as speech_sessions_router
 
@@ -53,3 +54,4 @@ async def add_request_context(
 
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(speech_sessions_router, prefix="/api/v1")
+app.include_router(coaching_router, prefix="/api/v1")

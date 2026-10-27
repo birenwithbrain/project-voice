@@ -75,3 +75,16 @@ npm run typecheck
 ## Privacy baseline
 
 No audio, transcripts, or user content is logged by the application. Environment files and future runtime storage are excluded from version control. Audio-storage implementation begins in a later phase.
+
+## Phase 7: AI coaching (Gemini)
+
+After local transcription and deterministic metrics, open the session report from the recorder. Run local preprocessing, transcription, and analysis first. The separate **Generate Gemini coaching** action requires an explicit in-app consent checkbox and sends only transcript text, deterministic metrics, and any saved goal/context. Raw audio is never sent to Gemini.
+
+Set these server-side values in the root `.env` file to enable coaching:
+
+```dotenv
+VOICE_COACH_GEMINI_API_KEY=your_google_ai_studio_key
+VOICE_COACH_GEMINI_MODEL=your_account_enabled_model_id
+```
+
+Confirm the model identifier is available to your own API key before setting it. These values are passed only to the API container and must never use a `NEXT_PUBLIC_` prefix. The coaching output is Pydantic-validated, every strength/improvement must cite a supplied metric value or exact transcript excerpt, and the report is stored in PostgreSQL. If Gemini is unavailable or returns unverifiable evidence, the API returns a safe generic error rather than provider details.
